@@ -2,38 +2,15 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-
-if(isset($_POST['submit']))
-  {
-    $email=$_POST['email'];
-$mobile=$_POST['mobile'];
-$newpassword=md5($_POST['newpassword']);
-  $sql ="SELECT Email FROM tbladmin WHERE Email=:email and MobileNumber=:mobile";
-$query= $dbh -> prepare($sql);
-$query-> bindParam(':email', $email, PDO::PARAM_STR);
-$query-> bindParam(':mobile', $mobile, PDO::PARAM_STR);
-$query-> execute();
-$results = $query -> fetchAll(PDO::FETCH_OBJ);
-if($query -> rowCount() > 0)
-{
-$con="update tbladmin set Password=:newpassword where Email=:email and MobileNumber=:mobile";
-$chngpwd1 = $dbh->prepare($con);
-$chngpwd1-> bindParam(':email', $email, PDO::PARAM_STR);
-$chngpwd1-> bindParam(':mobile', $mobile, PDO::PARAM_STR);
-$chngpwd1-> bindParam(':newpassword', $newpassword, PDO::PARAM_STR);
-$chngpwd1->execute();
-echo "<script>alert('Your Password succesfully changed');</script>";
-}
-else {
-echo "<script>alert('Email id or Mobile no is invalid');</script>"; 
-}
-}
-
+if (strlen($_SESSION['hbmsaid']==0)) {
+  header('location:logout.php');
+  } else{
+  
 ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BeachSide Hotels | Forgot Page</title>
+<title>BeachSide Hotels | Search Enquiry</title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -92,81 +69,139 @@ echo "<script>alert('Email id or Mobile no is invalid');</script>";
         });
 
     </script>
-       <script type="text/javascript">
-function valid()
-{
-if(document.chngpwd.newpassword.value!= document.chngpwd.confirmpassword.value)
-{
-alert("New Password and Confirm Password Field do not match  !!");
-document.chngpwd.confirmpassword.focus();
-return false;
-}
-return true;
-}
-</script>
 </head> 
 <body>
-	<p style="padding-top: 20px;padding-left: 20px"><a href="../index.php"><i class="fa fa-home" aria-hidden="true" style="font-size: 30px;padding-right: 10px"></i>Back Home!!!</a></p>
    <div class="page-container">
    <!--/content-inner-->
-   
-	<div class="left-content" >
-	   <div class="inner-content" >
-		
+	<div class="left-content">
+	   <div class="inner-content">
+		<!-- header-starts -->
+			<?php include_once('includes/header.php');?>
+				
+				<!--content-->
 			<div class="content">
-				<h3 style="color: red;font-family: cursive;">Hotel Booking Management Sytem</h3>
 <div class="women_main">
 	<!-- start content -->
-<div class="registration">
-		
-	<div class="registration_left">
+	<div class="grids">
+					
+					<div class="panel panel-widget forms-panel">
+						<div class="forms">
+							<div class="form-grids widget-shadow" data-example-id="basic-forms"> 
+								<div class="form-title">
+									<h4>Search Enquiry</h4>
+								</div>
+								 <form id="basic-form" method="post">
+                                <div class="form-group" style="padding-top: 20px">
+                                    <label style="font-size: 20px;padding-bottom: 10px">Search Enquiry</label>
+                                    <input id="searchdata" type="text" name="searchdata" required="true" class="form-control" placeholder="Enter Your Mobile Number"></div>
+                                
+                                <br>
+                                <button type="submit" class="btn btn-primary" name="search" id="submit">Search</button>
+                            </form>
+								<div class="form-body">
+								 <?php
+if(isset($_POST['search']))
+{ 
 
-		<h2>Please Enter Required info.</h2>
-		 <div class="registration_form">
-		 <!-- Form -->
-			<form method="post" name="chngpwd" onSubmit="return valid();">
-				<div>
-					<label>
-						<input placeholder="Email Address" type="email" required="true" name="email" style="border:solid #000 1px;">
-					</label>
+$sdata=$_POST['searchdata'];
+  ?>
+  <h4 align="center">Result against "<?php echo $sdata;?>" keyword </h4>	
+									     <table class="table table-bordered table-striped table-vcenter js-dataTable-full-pagination">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">S.No</th>
+                                        <th>Name</th>
+                                        <th class="d-none d-sm-table-cell">Email</th>
+                                        <th class="d-none d-sm-table-cell">Mobile Number</th>
+                                        <th class="d-none d-sm-table-cell">Enquiry Date</th>
+                                        <th class="d-none d-sm-table-cell" style="width: 15%;">Action</th>
+                                       </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    if (isset($_GET['pageno'])) {
+            $pageno = $_GET['pageno'];
+        } else {
+            $pageno = 1;
+        }
+        // Formula for pagination
+        $no_of_records_per_page = 3;
+        $offset = ($pageno-1) * $no_of_records_per_page;
+       $ret = "SELECT ID FROM tblcontact";
+$query1 = $dbh -> prepare($ret);
+$query1->execute();
+$results1=$query1->fetchAll(PDO::FETCH_OBJ);
+$total_rows=$query1->rowCount();
+$total_pages = ceil($total_rows / $no_of_records_per_page);
+
+$sql="SELECT * from tblcontact where MobileNumber like '$sdata%' LIMIT $offset, $no_of_records_per_page";
+$query = $dbh -> prepare($sql);
+$query->execute();
+$results=$query->fetchAll(PDO::FETCH_OBJ);
+
+$cnt=1;
+if($query->rowCount() > 0)
+{
+foreach($results as $row)
+{               ?>
+                                    <tr>
+                                        <td class="text-center"><?php echo htmlentities($cnt);?></td>
+                                        <td class="font-w600"><?php  echo htmlentities($row->Name);?></td>
+                                        <td class="d-none d-sm-table-cell"><?php  echo htmlentities($row->Email);?></td>
+                                        <td class="d-none d-sm-table-cell"><?php  echo htmlentities($row->MobileNumber);?></td>
+                                       
+                                        <td class="d-none d-sm-table-cell">
+                                            <span class="badge badge-primary"><?php  echo htmlentities($row->EnquiryDate);?></span>
+                                        </td>
+                                         <td><a href="view-enquiry.php?viewid=<?php echo htmlentities ($row->ID);?>">View Details</a></td>
+                                    </tr>
+                                
+                                
+                                
+                                  
+                                </tbody>
+                               
+                            </table>
+                            <div align="left">
+    <ul class="pagination" >
+        <li><a href="?pageno=1"><strong>First></strong></a></li>
+        <li class="<?php if($pageno <= 1){ echo 'disabled'; } ?>">
+            <a href="<?php if($pageno <= 1){ echo '#'; } else { echo "?pageno=".($pageno - 1); } ?>"><strong style="padding-left: 10px">Prev></strong></a>
+        </li>
+        <li class="<?php if($pageno >= $total_pages){ echo 'disabled'; } ?>">
+            <a href="<?php if($pageno >= $total_pages){ echo '#'; } else { echo "?pageno=".($pageno + 1); } ?>"><strong style="padding-left: 10px">Next></strong></a>
+        </li>
+        <li><a href="?pageno=<?php echo $total_pages; ?>"><strong style="padding-left: 10px">Last</strong></a></li>
+    </ul>
+</div> 
+<?php 
+$cnt=$cnt+1;
+} } else { ?>
+  <tr>
+    <td colspan="8"> No record found against this search</td>
+
+  </tr>
+  <?php } }?>								</div>
+							</div>
+						</div>
+					</div>
+			
+	
 				</div>
-				<div>
-					<label>
-						<input placeholder="Mobile Number" type="text" name="mobile" required="true" maxlength="10" pattern="[0-9]+" style="border:solid #000 1px;">
-					</label>
-				</div>	
-				<div>
-					<label>
-						<input placeholder="New Password" type="password" name="newpassword" required="true" style="border:solid #000 1px;">
-					</label>
-				</div>
-				<div>
-					<label>
-						<input placeholder="Confirm Password" type="password" name="confirmpassword" required="true" style="border:solid #000 1px;">
-					</label>
-				</div>				
-				<div>
-					<input type="submit" value="Reset" name="submit">
-				</div>
-				<div class="forget">
-					<a href="login.php">signin</a>
-				</div>
-			</form>
-			<!-- /Form -->
-			</div>
-	</div>
-	<div class="clearfix"></div>
-	</div>
 
 	<!-- end content -->
+	
+<?php include_once('includes/footer.php');?>
+</div>
 
 </div>
-</div>
-	<!--content-->
+			<!--content-->
 		</div>
 </div>
-				
-							  <div class="clearfix"></div>	
+				<!--//content-inner-->
+			<!--/sidebar-menu-->
+			<?php include_once('includes/sidebar.php');?>
+							  <div class="clearfix"></div>		
 							</div>
 							<script>
 							var toggle = true;
@@ -406,5 +441,7 @@ return true;
 
     </script>
 		   <script src="js/menu_jquery.js"></script>
+
+		   <script src="js/pages/be_tables_datatables.js"></script>
 </body>
-</html>
+</html><?php }  ?>

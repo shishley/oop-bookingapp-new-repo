@@ -3,29 +3,39 @@ session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
 
-if(isset($_POST['submit']))
+if(isset($_POST['login'])) 
   {
-    $email=$_POST['email'];
-$mobile=$_POST['mobile'];
-$newpassword=md5($_POST['newpassword']);
-  $sql ="SELECT Email FROM tbladmin WHERE Email=:email and MobileNumber=:mobile";
-$query= $dbh -> prepare($sql);
-$query-> bindParam(':email', $email, PDO::PARAM_STR);
-$query-> bindParam(':mobile', $mobile, PDO::PARAM_STR);
-$query-> execute();
-$results = $query -> fetchAll(PDO::FETCH_OBJ);
-if($query -> rowCount() > 0)
+    $username=$_POST['username'];
+    $password=md5($_POST['password']);
+    $sql ="SELECT ID FROM tbladmin WHERE UserName=:username and Password=:password";
+    $query=$dbh->prepare($sql);
+    $query-> bindParam(':username', $username, PDO::PARAM_STR);
+$query-> bindParam(':password', $password, PDO::PARAM_STR);
+    $query-> execute();
+    $results=$query->fetchAll(PDO::FETCH_OBJ);
+    if($query->rowCount() > 0)
 {
-$con="update tbladmin set Password=:newpassword where Email=:email and MobileNumber=:mobile";
-$chngpwd1 = $dbh->prepare($con);
-$chngpwd1-> bindParam(':email', $email, PDO::PARAM_STR);
-$chngpwd1-> bindParam(':mobile', $mobile, PDO::PARAM_STR);
-$chngpwd1-> bindParam(':newpassword', $newpassword, PDO::PARAM_STR);
-$chngpwd1->execute();
-echo "<script>alert('Your Password succesfully changed');</script>";
+foreach ($results as $result) {
+$_SESSION['hbmsaid']=$result->ID;
 }
-else {
-echo "<script>alert('Email id or Mobile no is invalid');</script>"; 
+
+  if(!empty($_POST["remember"])) {
+//COOKIES for username
+setcookie ("user_login",$_POST["username"],time()+ (10 * 365 * 24 * 60 * 60));
+//COOKIES for password
+setcookie ("userpassword",$_POST["password"],time()+ (10 * 365 * 24 * 60 * 60));
+} else {
+if(isset($_COOKIE["user_login"])) {
+setcookie ("user_login","");
+if(isset($_COOKIE["userpassword"])) {
+setcookie ("userpassword","");
+        }
+      }
+}
+$_SESSION['login']=$_POST['username'];
+echo "<script type='text/javascript'> document.location ='dashboard.php'; </script>";
+} else{
+echo "<script>alert('Invalid Details');</script>";
 }
 }
 
@@ -33,7 +43,7 @@ echo "<script>alert('Email id or Mobile no is invalid');</script>";
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BeachSide Hotels | Forgot Page</title>
+<title>BeachSide Hotels | login page</title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -92,18 +102,6 @@ echo "<script>alert('Email id or Mobile no is invalid');</script>";
         });
 
     </script>
-       <script type="text/javascript">
-function valid()
-{
-if(document.chngpwd.newpassword.value!= document.chngpwd.confirmpassword.value)
-{
-alert("New Password and Confirm Password Field do not match  !!");
-document.chngpwd.confirmpassword.focus();
-return false;
-}
-return true;
-}
-</script>
 </head> 
 <body>
 	<p style="padding-top: 20px;padding-left: 20px"><a href="../index.php"><i class="fa fa-home" aria-hidden="true" style="font-size: 30px;padding-right: 10px"></i>Back Home!!!</a></p>
@@ -121,35 +119,29 @@ return true;
 		
 	<div class="registration_left">
 
-		<h2>Please Enter Required info.</h2>
+		<h2>Please sign in</h2>
 		 <div class="registration_form">
 		 <!-- Form -->
-			<form method="post" name="chngpwd" onSubmit="return valid();">
+			<form method="post">
 				<div>
 					<label>
-						<input placeholder="Email Address" type="email" required="true" name="email" style="border:solid #000 1px;">
+						<input placeholder="Username" type="text" required="true" name="username" style="border:solid #000 1px;" value="<?php if(isset($_COOKIE["user_login"])) { echo $_COOKIE["user_login"]; } ?>">
 					</label>
 				</div>
 				<div>
 					<label>
-						<input placeholder="Mobile Number" type="text" name="mobile" required="true" maxlength="10" pattern="[0-9]+" style="border:solid #000 1px;">
+						<input placeholder="password" type="Password" name="password" required="true" style="border:solid #000 1px;" value="<?php if(isset($_COOKIE["userpassword"])) { echo $_COOKIE["userpassword"]; } ?>">
 					</label>
 				</div>	
+				<div class="checkbox checkbox-primary" style="padding-left: 20px">
+                <input type="checkbox" id="remember" name="remember"  <?php if(isset($_COOKIE["user_login"])) { ?> checked <?php } ?> />
+                <label for="keep_me_logged_in">Keep me signed in</label>
+            </div>					
 				<div>
-					<label>
-						<input placeholder="New Password" type="password" name="newpassword" required="true" style="border:solid #000 1px;">
-					</label>
-				</div>
-				<div>
-					<label>
-						<input placeholder="Confirm Password" type="password" name="confirmpassword" required="true" style="border:solid #000 1px;">
-					</label>
-				</div>				
-				<div>
-					<input type="submit" value="Reset" name="submit">
+					<input type="submit" value="sign in" name="login">
 				</div>
 				<div class="forget">
-					<a href="login.php">signin</a>
+					<a href="forgot-password.php">forgot your password</a>
 				</div>
 			</form>
 			<!-- /Form -->

@@ -2,38 +2,35 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-
-if(isset($_POST['submit']))
+if (strlen($_SESSION['hbmsaid']==0)) {
+  header('location:logout.php');
+  } else{
+      if(isset($_POST['submit']))
   {
-    $email=$_POST['email'];
-$mobile=$_POST['mobile'];
-$newpassword=md5($_POST['newpassword']);
-  $sql ="SELECT Email FROM tbladmin WHERE Email=:email and MobileNumber=:mobile";
-$query= $dbh -> prepare($sql);
-$query-> bindParam(':email', $email, PDO::PARAM_STR);
-$query-> bindParam(':mobile', $mobile, PDO::PARAM_STR);
-$query-> execute();
-$results = $query -> fetchAll(PDO::FETCH_OBJ);
-if($query -> rowCount() > 0)
-{
-$con="update tbladmin set Password=:newpassword where Email=:email and MobileNumber=:mobile";
-$chngpwd1 = $dbh->prepare($con);
-$chngpwd1-> bindParam(':email', $email, PDO::PARAM_STR);
-$chngpwd1-> bindParam(':mobile', $mobile, PDO::PARAM_STR);
-$chngpwd1-> bindParam(':newpassword', $newpassword, PDO::PARAM_STR);
-$chngpwd1->execute();
-echo "<script>alert('Your Password succesfully changed');</script>";
-}
-else {
-echo "<script>alert('Email id or Mobile no is invalid');</script>"; 
-}
-}
 
+
+
+    $bookingid=$_GET['bookingid'];
+    $status=$_POST['status'];
+   $remark=$_POST['remark'];
+  
+
+$sql= "update tblbooking set Status=:status,Remark=:remark where BookingNumber=:bookingid";
+$query=$dbh->prepare($sql);
+$query->bindParam(':status',$status,PDO::PARAM_STR);
+$query->bindParam(':remark',$remark,PDO::PARAM_STR);
+$query->bindParam(':bookingid',$bookingid,PDO::PARAM_STR);
+
+ $query->execute();
+
+  echo '<script>alert("Remark has been updated")</script>';
+ echo "<script>window.location.href ='new-booking.php'</script>";
+}
 ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BeachSide Hotels | Forgot Page</title>
+<title>BeachSide Hotels | View Booking</title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -92,81 +89,232 @@ echo "<script>alert('Email id or Mobile no is invalid');</script>";
         });
 
     </script>
-       <script type="text/javascript">
-function valid()
-{
-if(document.chngpwd.newpassword.value!= document.chngpwd.confirmpassword.value)
-{
-alert("New Password and Confirm Password Field do not match  !!");
-document.chngpwd.confirmpassword.focus();
-return false;
-}
-return true;
-}
-</script>
 </head> 
 <body>
-	<p style="padding-top: 20px;padding-left: 20px"><a href="../index.php"><i class="fa fa-home" aria-hidden="true" style="font-size: 30px;padding-right: 10px"></i>Back Home!!!</a></p>
    <div class="page-container">
    <!--/content-inner-->
-   
-	<div class="left-content" >
-	   <div class="inner-content" >
-		
+	<div class="left-content">
+	   <div class="inner-content">
+		<!-- header-starts -->
+			<?php include_once('includes/header.php');?>
+				
+				<!--content-->
 			<div class="content">
-				<h3 style="color: red;font-family: cursive;">Hotel Booking Management Sytem</h3>
 <div class="women_main">
 	<!-- start content -->
-<div class="registration">
-		
-	<div class="registration_left">
+	<div class="grids">
+					<div class="progressbar-heading grids-heading">
+						<h2>View Booking</h2>
+					</div>
+					<div class="panel panel-widget forms-panel">
+						<div class="forms">
+							<div class="form-grids widget-shadow" data-example-id="basic-forms"> 
+								<div class="form-title">
+									<h4>View Booking</h4>
+								</div>
+								<div class="form-body">
+									                                    <?php
+                  
+                  $bookid=$_GET['bookingid'];
 
-		<h2>Please Enter Required info.</h2>
-		 <div class="registration_form">
-		 <!-- Form -->
-			<form method="post" name="chngpwd" onSubmit="return valid();">
-				<div>
-					<label>
-						<input placeholder="Email Address" type="email" required="true" name="email" style="border:solid #000 1px;">
-					</label>
+$sql="SELECT tblbooking.BookingNumber,tbluser.FullName,tbluser.MobileNumber,tbluser.Email,tblbooking.IDType,tblbooking.Gender,tblbooking.Address,tblbooking.CheckinDate,tblbooking.CheckoutDate,tblbooking.BookingDate,tblbooking.Remark,tblbooking.Status,tblbooking.UpdationDate,tblcategory.CategoryName,tblcategory.Description,tblcategory.Price,tblroom.RoomName,tblroom.MaxAdult,tblroom.MaxChild,tblroom.RoomDesc,tblroom.NoofBed,tblroom.Image,tblroom.RoomFacility 
+from tblbooking 
+join tblroom on tblbooking.RoomId=tblroom.ID 
+join tblcategory on tblcategory.ID=tblroom.RoomType 
+join tbluser on tblbooking.UserID=tbluser.ID  
+where tblbooking.BookingNumber=:bookid";
+$query = $dbh -> prepare($sql);
+$query-> bindParam(':bookid', $bookid, PDO::PARAM_STR);
+$query->execute();
+$results=$query->fetchAll(PDO::FETCH_OBJ);
+
+$cnt=1;
+if($query->rowCount() > 0)
+{
+foreach($results as $row)
+{               ?>
+                            <table border="1" class="table table-bordered table-striped table-vcenter js-dataTable-full-pagination">
+                            	<tr>
+  <th colspan="4" style="color: red;font-weight: bold;text-align: center;font-size: 20px"> Booking Number: <?php echo $row->BookingNumber;?></th>
+</tr>
+<tr>
+  <th colspan="4" style="color: blue;font-weight: bold;font-size: 15px"> Booking Detail:</th>
+</tr>
+<tr>
+    <th>Customer Name</th>
+    <td><?php  echo $row->FullName;?></td>
+    <th>Mobile Number</th>
+    <td><?php  echo $row->MobileNumber;?></td>
+  </tr>
+  
+
+  <tr>
+    
+   <th>Email</th>
+    <td><?php  echo $row->Email;?></td>
+    <th>ID Type</th>
+    <td><?php  echo $row->IDType;?></td>
+  </tr>
+  <tr>
+    
+   <th>Gender</th>
+    <td><?php  echo $row->Gender;?></td>
+    <th>Address</th>
+    <td><?php  echo $row->Address;?></td>
+  </tr>
+  <tr>
+    <th>Check in Date</th>
+    <td><?php  echo $row->CheckinDate;?></td>
+    <th>Check out Date</th>
+    <td><?php  echo $row->CheckoutDate;?></td>
+  </tr>
+  
+   <tr>
+    <tr>
+  <th colspan="4" style="color: blue;font-weight: bold;font-size: 15px"> Room Detail:</th>
+</tr>
+    <th>Room Type</th>
+    <td><?php  echo $row->CategoryName;?></td>
+    <th>Room Price(perday)</th>
+    <td>$<?php  echo $row->Price;?></td>
+  </tr>
+ 
+ <tr>
+    
+    <th>Room Name</th>
+    <td><?php  echo $row->RoomName;?></td>
+    <th>Room Description</th>
+    <td><?php  echo $row->RoomDesc;?></td>
+  </tr>
+   <tr>
+    
+    <th>Max Adult</th>
+    <td><?php  echo $row->MaxAdult;?></td>
+    <th>Max Child</th>
+    <td><?php  echo $row->MaxChild;?></td>
+  </tr>
+<tr>
+    
+    <th>No.of Bed</th>
+    <td><?php  echo $row->NoofBed;?></td>
+    <th>Room Image</th>
+    <td><img src="images/<?php echo $row->Image;?>" width="100" height="100" value="<?php  echo $row->Image;?>"></td>
+  </tr>
+   <tr>
+    
+    <th>Room Facility</th>
+    <td><?php  echo $row->RoomFacility;?></td>
+    <th>Booking Date</th>
+    <td><?php  echo $row->BookingDate;?></td>
+  </tr>
+   <tr>
+  <th colspan="4" style="color: blue;font-weight: bold;font-size: 15px"> Admin Remarks:</th>
+</tr>
+  <tr>
+    
+     <th>Order Final Status</th>
+
+    <td> <?php  $status=$row->Status;
+    
+if($row->Status=="Approved")
+{
+  echo "Your Booking has been approved";
+}
+
+if($row->Status=="Cancelled")
+{
+ echo "Your Booking has been cancelled";
+}
+
+
+if($row->Status=="")
+{
+  echo "Not Response Yet";
+}
+
+
+     ;?></td>
+     <th >Admin Remark</th>
+    <?php if($row->Status==""){ ?>
+
+                     <td><?php echo "Not Updated Yet"; ?></td>
+<?php } else { ?>                  <td><?php  echo htmlentities($row->Status);?>
+                  </td>
+                  <?php } ?>
+  </tr>
+  
+ 
+<?php $cnt=$cnt+1;}} ?>
+
+</table> 
+<?php 
+
+if ($status==""){
+?> 
+<p align="center"  style="padding-top: 20px">                            
+ <button class="btn btn-primary waves-effect waves-light w-lg" data-toggle="modal" data-target="#myModal">Take Action</button></p>  
+
+<?php } ?>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+     <div class="modal-content">
+      <div class="modal-header">
+                                                    <h5 class="modal-title" id="exampleModalLabel">Take Action</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                <table class="table table-bordered table-hover data-tables">
+                                                	                            <form method="post" name="submit">
+
+                                
+                               
+     <tr>
+    <th>Remark :</th>
+    <td>
+    <textarea name="remark" placeholder="Remark" rows="12" cols="14" class="form-control wd-450" required="true"></textarea></td>
+  </tr> 
+   
+ 
+  <tr>
+    <th>Status :</th>
+    <td>
+
+   <select name="status" class="form-control wd-450" required="true" >
+     <option value="Approved" selected="true">Approved</option>
+     <option value="Cancelled">Cancelled</option>
+   </select></td>
+  </tr>
+</table>
+</div>
+<div class="modal-footer">
+ <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+ <button type="submit" name="submit" class="btn btn-primary">Update</button>
+  
+  </form>
+									   
+								</div>
+							</div>
+						</div>
+					</div>
+			
+	
 				</div>
-				<div>
-					<label>
-						<input placeholder="Mobile Number" type="text" name="mobile" required="true" maxlength="10" pattern="[0-9]+" style="border:solid #000 1px;">
-					</label>
-				</div>	
-				<div>
-					<label>
-						<input placeholder="New Password" type="password" name="newpassword" required="true" style="border:solid #000 1px;">
-					</label>
-				</div>
-				<div>
-					<label>
-						<input placeholder="Confirm Password" type="password" name="confirmpassword" required="true" style="border:solid #000 1px;">
-					</label>
-				</div>				
-				<div>
-					<input type="submit" value="Reset" name="submit">
-				</div>
-				<div class="forget">
-					<a href="login.php">signin</a>
-				</div>
-			</form>
-			<!-- /Form -->
-			</div>
-	</div>
-	<div class="clearfix"></div>
-	</div>
 
 	<!-- end content -->
+	
+<?php include_once('includes/footer.php');?>
+</div>
 
 </div>
-</div>
-	<!--content-->
+			<!--content-->
 		</div>
 </div>
-				
-							  <div class="clearfix"></div>	
+				<!--//content-inner-->
+			<!--/sidebar-menu-->
+			<?php include_once('includes/sidebar.php');?>
+							  <div class="clearfix"></div>		
 							</div>
 							<script>
 							var toggle = true;
@@ -406,5 +554,7 @@ return true;
 
     </script>
 		   <script src="js/menu_jquery.js"></script>
+
+		   <script src="js/pages/be_tables_datatables.js"></script>
 </body>
-</html>
+</html><?php }  ?>

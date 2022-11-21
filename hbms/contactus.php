@@ -2,38 +2,35 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-
-if(isset($_POST['submit']))
+if (strlen($_SESSION['hbmsaid']==0)) {
+  header('location:logout.php');
+  } else{
+     if(isset($_POST['submit']))
   {
-    $email=$_POST['email'];
-$mobile=$_POST['mobile'];
-$newpassword=md5($_POST['newpassword']);
-  $sql ="SELECT Email FROM tbladmin WHERE Email=:email and MobileNumber=:mobile";
-$query= $dbh -> prepare($sql);
-$query-> bindParam(':email', $email, PDO::PARAM_STR);
-$query-> bindParam(':mobile', $mobile, PDO::PARAM_STR);
-$query-> execute();
-$results = $query -> fetchAll(PDO::FETCH_OBJ);
-if($query -> rowCount() > 0)
-{
-$con="update tbladmin set Password=:newpassword where Email=:email and MobileNumber=:mobile";
-$chngpwd1 = $dbh->prepare($con);
-$chngpwd1-> bindParam(':email', $email, PDO::PARAM_STR);
-$chngpwd1-> bindParam(':mobile', $mobile, PDO::PARAM_STR);
-$chngpwd1-> bindParam(':newpassword', $newpassword, PDO::PARAM_STR);
-$chngpwd1->execute();
-echo "<script>alert('Your Password succesfully changed');</script>";
-}
-else {
-echo "<script>alert('Email id or Mobile no is invalid');</script>"; 
-}
-}
 
-?>
+$hbmsaid=$_SESSION['hbmsaid'];
+ $pagetitle=$_POST['pagetitle'];
+$pagedes=$_POST['pagedes'];
+ $pagetitle=$_POST['pagetitle'];
+$pagedes=$_POST['pagedes'];
+$mobnum=$_POST['mobnum'];
+$email=$_POST['email'];
+$sql="update tblpage set PageTitle=:pagetitle,PageDescription=:pagedes,Email=:email,MobileNumber=:mobnum where  PageType='contactus'";
+$query=$dbh->prepare($sql);
+$query->bindParam(':pagetitle',$pagetitle,PDO::PARAM_STR);
+$query->bindParam(':pagedes',$pagedes,PDO::PARAM_STR);
+$query->bindParam(':email',$email,PDO::PARAM_STR);
+$query->bindParam(':mobnum',$mobnum,PDO::PARAM_STR);
+$query->execute();
+echo '<script>alert("Contact us has been updated")</script>';
+
+
+  }
+  ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BeachSide Hotels | Forgot Page</title>
+<title>BeachSide Hotels | Contact Us</title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -56,6 +53,7 @@ echo "<script>alert('Email id or Mobile no is invalid');</script>";
    <!--pie-chart--->
 <script src="js/pie-chart.js" type="text/javascript"></script>
  <script type="text/javascript">
+
 
         $(document).ready(function () {
             $('#demo-pie-1').pieChart({
@@ -92,81 +90,75 @@ echo "<script>alert('Email id or Mobile no is invalid');</script>";
         });
 
     </script>
-       <script type="text/javascript">
-function valid()
-{
-if(document.chngpwd.newpassword.value!= document.chngpwd.confirmpassword.value)
-{
-alert("New Password and Confirm Password Field do not match  !!");
-document.chngpwd.confirmpassword.focus();
-return false;
-}
-return true;
-}
-</script>
+    <script src="http://js.nicedit.com/nicEdit-latest.js" type="text/javascript"></script>
+<script type="text/javascript">bkLib.onDomLoaded(nicEditors.allTextAreas);</script>
 </head> 
 <body>
-	<p style="padding-top: 20px;padding-left: 20px"><a href="../index.php"><i class="fa fa-home" aria-hidden="true" style="font-size: 30px;padding-right: 10px"></i>Back Home!!!</a></p>
    <div class="page-container">
    <!--/content-inner-->
-   
-	<div class="left-content" >
-	   <div class="inner-content" >
-		
+	<div class="left-content">
+	   <div class="inner-content">
+		<!-- header-starts -->
+			<?php include_once('includes/header.php');?>
+				
+				<!--content-->
 			<div class="content">
-				<h3 style="color: red;font-family: cursive;">Hotel Booking Management Sytem</h3>
 <div class="women_main">
 	<!-- start content -->
-<div class="registration">
-		
-	<div class="registration_left">
+	<div class="grids">
+					<div class="progressbar-heading grids-heading">
+						<h2>Contact Us</h2>
+					</div>
+					<div class="panel panel-widget forms-panel">
+						<div class="forms">
+							<div class="form-grids widget-shadow" data-example-id="basic-forms"> 
+								<div class="form-title">
+									<h4>Contact Us</h4>
+								</div>
+								<div class="form-body">
+									
+									<form method="post" enctype="multipart/form-data">
+										<?php
 
-		<h2>Please Enter Required info.</h2>
-		 <div class="registration_form">
-		 <!-- Form -->
-			<form method="post" name="chngpwd" onSubmit="return valid();">
-				<div>
-					<label>
-						<input placeholder="Email Address" type="email" required="true" name="email" style="border:solid #000 1px;">
-					</label>
+$sql="SELECT * from  tblpage where PageType='contactus'";
+$query = $dbh -> prepare($sql);
+$query->execute();
+$results=$query->fetchAll(PDO::FETCH_OBJ);
+$cnt=1;
+if($query->rowCount() > 0)
+{
+foreach($results as $row)
+{               ?>
+										<div class="form-group"> <label for="exampleInputEmail1">Page Title</label> <input type="text" name="pagetitle" id="pagetitle" required="true" value="<?php  echo $row->PageTitle;?>" class="form-control"> </div>
+										<div class="form-group"> <label for="exampleInputEmail1">Email</label> <input type="text" name="email" id="email" required="true" value="<?php  echo $row->Email;?>" class="form-control"> </div>
+										<div class="form-group"> <label for="exampleInputEmail1">Mobile Number</label> <input type="text" name="mobnum" id="mobnum" required="true" value="<?php  echo $row->MobileNumber;?>" class="form-control"> </div>
+                                                    <div class="form-group"> <label for="exampleInputEmail1">Page Description</label> <textarea type="text" name="pagedes" id="pagedes" required="true"class="form-control"><?php  echo $row->PageDescription;?></textarea> </div>
+                                                   
+									<?php $cnt=$cnt+1;}} ?> 
+									
+									
+									   <button type="submit" class="btn btn-default" name="submit">Update</button> </form> 
+								</div>
+							</div>
+						</div>
+					</div>
+			
+	
 				</div>
-				<div>
-					<label>
-						<input placeholder="Mobile Number" type="text" name="mobile" required="true" maxlength="10" pattern="[0-9]+" style="border:solid #000 1px;">
-					</label>
-				</div>	
-				<div>
-					<label>
-						<input placeholder="New Password" type="password" name="newpassword" required="true" style="border:solid #000 1px;">
-					</label>
-				</div>
-				<div>
-					<label>
-						<input placeholder="Confirm Password" type="password" name="confirmpassword" required="true" style="border:solid #000 1px;">
-					</label>
-				</div>				
-				<div>
-					<input type="submit" value="Reset" name="submit">
-				</div>
-				<div class="forget">
-					<a href="login.php">signin</a>
-				</div>
-			</form>
-			<!-- /Form -->
-			</div>
-	</div>
-	<div class="clearfix"></div>
-	</div>
 
 	<!-- end content -->
+	
+<?php include_once('includes/footer.php');?>
+</div>
 
 </div>
-</div>
-	<!--content-->
+			<!--content-->
 		</div>
 </div>
-				
-							  <div class="clearfix"></div>	
+				<!--//content-inner-->
+			<!--/sidebar-menu-->
+			<?php include_once('includes/sidebar.php');?>
+							  <div class="clearfix"></div>		
 							</div>
 							<script>
 							var toggle = true;
@@ -407,4 +399,4 @@ return true;
     </script>
 		   <script src="js/menu_jquery.js"></script>
 </body>
-</html>
+</html><?php }  ?>

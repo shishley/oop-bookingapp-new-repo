@@ -2,38 +2,45 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-
-if(isset($_POST['submit']))
+if (strlen($_SESSION['hbmsaid']==0)) {
+  header('location:logout.php');
+  } else{
+    if(isset($_POST['submit']))
   {
-    $email=$_POST['email'];
-$mobile=$_POST['mobile'];
-$newpassword=md5($_POST['newpassword']);
-  $sql ="SELECT Email FROM tbladmin WHERE Email=:email and MobileNumber=:mobile";
-$query= $dbh -> prepare($sql);
-$query-> bindParam(':email', $email, PDO::PARAM_STR);
-$query-> bindParam(':mobile', $mobile, PDO::PARAM_STR);
-$query-> execute();
-$results = $query -> fetchAll(PDO::FETCH_OBJ);
-if($query -> rowCount() > 0)
-{
-$con="update tbladmin set Password=:newpassword where Email=:email and MobileNumber=:mobile";
-$chngpwd1 = $dbh->prepare($con);
-$chngpwd1-> bindParam(':email', $email, PDO::PARAM_STR);
-$chngpwd1-> bindParam(':mobile', $mobile, PDO::PARAM_STR);
-$chngpwd1-> bindParam(':newpassword', $newpassword, PDO::PARAM_STR);
-$chngpwd1->execute();
-echo "<script>alert('Your Password succesfully changed');</script>";
-}
-else {
-echo "<script>alert('Email id or Mobile no is invalid');</script>"; 
-}
-}
 
-?>
+$hbmsaid=$_SESSION['hbmsaid'];
+ $roomtype=$_POST['roomtype'];
+ $roomname=$_POST['roomname'];
+ $maxadult=$_POST['maxadult'];
+ $maxchild=$_POST['maxchild'];
+ $roomfac = implode(',', $_POST['roomfac']);
+ $roomdes=$_POST['roomdes'];
+ $nobed=$_POST['nobed'];
+ $eid=$_GET['editid'];
+
+$sql="update tblroom set RoomType=:roomtype,RoomName=:roomname,MaxAdult=:maxadult,MaxChild=:maxchild,RoomDesc=:roomdes,NoofBed=:nobed,RoomFacility=:roomfac where ID=:eid";
+$query=$dbh->prepare($sql);
+$query->bindParam(':roomtype',$roomtype,PDO::PARAM_STR);
+$query->bindParam(':roomname',$roomname,PDO::PARAM_STR);
+$query->bindParam(':maxadult',$maxadult,PDO::PARAM_STR);
+$query->bindParam(':maxchild',$maxchild,PDO::PARAM_STR);
+$query->bindParam(':roomdes',$roomdes,PDO::PARAM_STR);
+$query->bindParam(':nobed',$nobed,PDO::PARAM_STR);
+$query->bindParam(':roomfac',$roomfac,PDO::PARAM_STR);
+$query->bindParam(':eid',$eid,PDO::PARAM_STR);
+ $query->execute();
+
+   $query->execute();
+
+    echo '<script>alert("Room detail has been updated")</script>';
+    echo "<script>window.location.href ='manage-room.php'</script>";
+
+  }
+  ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BeachSide Hotels | Forgot Page</title>
+<title>BeachSide Hotels | Edit Room</title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -92,81 +99,111 @@ echo "<script>alert('Email id or Mobile no is invalid');</script>";
         });
 
     </script>
-       <script type="text/javascript">
-function valid()
-{
-if(document.chngpwd.newpassword.value!= document.chngpwd.confirmpassword.value)
-{
-alert("New Password and Confirm Password Field do not match  !!");
-document.chngpwd.confirmpassword.focus();
-return false;
-}
-return true;
-}
-</script>
 </head> 
 <body>
-	<p style="padding-top: 20px;padding-left: 20px"><a href="../index.php"><i class="fa fa-home" aria-hidden="true" style="font-size: 30px;padding-right: 10px"></i>Back Home!!!</a></p>
    <div class="page-container">
    <!--/content-inner-->
-   
-	<div class="left-content" >
-	   <div class="inner-content" >
-		
+	<div class="left-content">
+	   <div class="inner-content">
+		<!-- header-starts -->
+			<?php include_once('includes/header.php');?>
+				
+				<!--content-->
 			<div class="content">
-				<h3 style="color: red;font-family: cursive;">Hotel Booking Management Sytem</h3>
 <div class="women_main">
 	<!-- start content -->
-<div class="registration">
-		
-	<div class="registration_left">
+	<div class="grids">
+					<div class="progressbar-heading grids-heading">
+						<h2>Edit Room</h2>
+					</div>
+					<div class="panel panel-widget forms-panel">
+						<div class="forms">
+							<div class="form-grids widget-shadow" data-example-id="basic-forms"> 
+								<div class="form-title">
+									<h4>Edit Room</h4>
+								</div>
+								<div class="form-body">
+									
+									<form method="post" enctype="multipart/form-data">
+										<?php
+$eid=$_GET['editid'];
+$sql="SELECT * from  tblroom where ID=$eid";
+$query = $dbh -> prepare($sql);
+$query->execute();
+$results=$query->fetchAll(PDO::FETCH_OBJ);
+$cnt=1;
+if($query->rowCount() > 0)
+{
+foreach($results as $row)
+{               ?>
+										<div class="form-group"> <label for="exampleInputEmail1">Room Type or Category</label> <select type="text" name="roomtype" id="roomtype" value="" class="form-control" required="true">
+<option value="<?php  echo $row->RoomType;?>"><?php  echo $row->RoomType;?></option>
+                                                        <?php 
 
-		<h2>Please Enter Required info.</h2>
-		 <div class="registration_form">
-		 <!-- Form -->
-			<form method="post" name="chngpwd" onSubmit="return valid();">
-				<div>
-					<label>
-						<input placeholder="Email Address" type="email" required="true" name="email" style="border:solid #000 1px;">
-					</label>
+$sql2 = "SELECT * from   tblcategory ";
+$query2 = $dbh -> prepare($sql2);
+$query2->execute();
+$result2=$query2->fetchAll(PDO::FETCH_OBJ);
+
+foreach($result2 as $row2)
+{          
+    ?>  
+<option value="<?php echo htmlentities($row2->ID);?>"><?php echo htmlentities($row2->CategoryName);?></option>
+ <?php } ?> 
+            
+                                                        
+                                                    </select> </div>
+                                                    <div class="form-group"> <label for="exampleInputEmail1">Room Name</label> <input type="text" class="form-control" name="roomname" value="<?php  echo $row->RoomName;?>" required='true'> </div>
+                                                    <div class="form-group"> <label for="exampleInputEmail1">Max Adult</label> <input type="text" class="form-control" name="maxadult" value="<?php  echo $row->MaxAdult;?>" required='true'> </div>
+                                                    <div class="form-group"> <label for="exampleInputEmail1">Max Child</label> <input type="text" class="form-control" name="maxchild" value="<?php  echo $row->MaxChild;?>" required='true'> </div>
+                                                    <div class="form-group"> <label for="exampleInputEmail1">Room Description</label> <textarea type="text" class="form-control" name="roomdes"><?php  echo $row->RoomDesc;?></textarea> </div>
+                                                    <div class="form-group"> <label for="exampleInputEmail1">No. of Bed</label> <input type="text" class="form-control" name="nobed" value="<?php  echo $row->NoofBed;?>" required='true'> </div>
+										<div class="form-group"> <label for="exampleInputEmail1">Room Image</label> &nbsp;&nbsp;
+<img src="images/<?php echo $row->Image;?>" width="100" height="100" value="<?php  echo $row->Image;?>">
+<a href="changeimage.php?editid=<?php echo $row->ID;?>"> &nbsp; Edit Image</a>
+										 </div>
+									 <div class="form-group"> <label for="exampleInputEmail1">Room Facility</label> <select type="text" name="roomfac[]" id="roomfac" value="" class="form-control" multiple="multiple">
+<option value="<?php  echo $row->RoomFacility;?>"><?php  echo $row->RoomFacility;?></option>
+                                                        <?php 
+
+
+$sql2 = "SELECT * from   tblfacility ";
+$query2 = $dbh -> prepare($sql2);
+$query2->execute();
+$result2=$query2->fetchAll(PDO::FETCH_OBJ);
+
+foreach($result2 as $row3)
+{          
+    ?>  
+<option value="<?php echo htmlentities($row3->FacilityTitle);?>"><?php echo htmlentities($row3->FacilityTitle);?></option>
+ <?php } ?> 
+            
+                                                        
+      <?php $cnt=$cnt+1;}} ?>                                              </select> </div> 
+									
+									
+									   <button type="submit" class="btn btn-default" name="submit">Update</button> </form> 
+								</div>
+							</div>
+						</div>
+					</div>
+			
+	
 				</div>
-				<div>
-					<label>
-						<input placeholder="Mobile Number" type="text" name="mobile" required="true" maxlength="10" pattern="[0-9]+" style="border:solid #000 1px;">
-					</label>
-				</div>	
-				<div>
-					<label>
-						<input placeholder="New Password" type="password" name="newpassword" required="true" style="border:solid #000 1px;">
-					</label>
-				</div>
-				<div>
-					<label>
-						<input placeholder="Confirm Password" type="password" name="confirmpassword" required="true" style="border:solid #000 1px;">
-					</label>
-				</div>				
-				<div>
-					<input type="submit" value="Reset" name="submit">
-				</div>
-				<div class="forget">
-					<a href="login.php">signin</a>
-				</div>
-			</form>
-			<!-- /Form -->
-			</div>
-	</div>
-	<div class="clearfix"></div>
-	</div>
 
 	<!-- end content -->
+	
+<?php include_once('includes/footer.php');?>
+</div>
 
 </div>
-</div>
-	<!--content-->
+			<!--content-->
 		</div>
 </div>
-				
-							  <div class="clearfix"></div>	
+				<!--//content-inner-->
+			<!--/sidebar-menu-->
+			<?php include_once('includes/sidebar.php');?>
+							  <div class="clearfix"></div>		
 							</div>
 							<script>
 							var toggle = true;
@@ -407,4 +444,4 @@ return true;
     </script>
 		   <script src="js/menu_jquery.js"></script>
 </body>
-</html>
+</html><?php }  ?>

@@ -2,38 +2,42 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-
-if(isset($_POST['submit']))
+if (strlen($_SESSION['hbmsaid']==0)) {
+  header('location:logout.php');
+  } else{
+    if(isset($_POST['submit']))
   {
-    $email=$_POST['email'];
-$mobile=$_POST['mobile'];
-$newpassword=md5($_POST['newpassword']);
-  $sql ="SELECT Email FROM tbladmin WHERE Email=:email and MobileNumber=:mobile";
-$query= $dbh -> prepare($sql);
-$query-> bindParam(':email', $email, PDO::PARAM_STR);
-$query-> bindParam(':mobile', $mobile, PDO::PARAM_STR);
-$query-> execute();
-$results = $query -> fetchAll(PDO::FETCH_OBJ);
-if($query -> rowCount() > 0)
-{
-$con="update tbladmin set Password=:newpassword where Email=:email and MobileNumber=:mobile";
-$chngpwd1 = $dbh->prepare($con);
-$chngpwd1-> bindParam(':email', $email, PDO::PARAM_STR);
-$chngpwd1-> bindParam(':mobile', $mobile, PDO::PARAM_STR);
-$chngpwd1-> bindParam(':newpassword', $newpassword, PDO::PARAM_STR);
-$chngpwd1->execute();
-echo "<script>alert('Your Password succesfully changed');</script>";
-}
-else {
-echo "<script>alert('Email id or Mobile no is invalid');</script>"; 
-}
+
+$hbmsaid=$_SESSION['hbmsaid'];
+ $cname=$_POST['cname'];
+ $catdes=$_POST['catdes'];
+ $price=$_POST['price'];
+
+$sql="insert into tblcategory(CategoryName,Description,Price)values(:cname,:catdes,:price)";
+$query=$dbh->prepare($sql);
+$query->bindParam(':cname',$cname,PDO::PARAM_STR);
+$query->bindParam(':catdes',$catdes,PDO::PARAM_STR);
+$query->bindParam(':price',$price,PDO::PARAM_STR);
+ $query->execute();
+
+   $LastInsertId=$dbh->lastInsertId();
+   if ($LastInsertId>0) {
+    echo '<script>alert("Category has been added.")</script>';
+echo "<script>window.location.href ='add-category.php'</script>";
+  }
+  else
+    {
+         echo '<script>alert("Something Went Wrong. Please try again")</script>';
+    }
+
+  
 }
 
 ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>BeachSide Hotels | Forgot Page</title>
+<title>BeachSide Hotels | Add Category</title>
 
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- Bootstrap Core CSS -->
@@ -92,81 +96,57 @@ echo "<script>alert('Email id or Mobile no is invalid');</script>";
         });
 
     </script>
-       <script type="text/javascript">
-function valid()
-{
-if(document.chngpwd.newpassword.value!= document.chngpwd.confirmpassword.value)
-{
-alert("New Password and Confirm Password Field do not match  !!");
-document.chngpwd.confirmpassword.focus();
-return false;
-}
-return true;
-}
-</script>
 </head> 
 <body>
-	<p style="padding-top: 20px;padding-left: 20px"><a href="../index.php"><i class="fa fa-home" aria-hidden="true" style="font-size: 30px;padding-right: 10px"></i>Back Home!!!</a></p>
    <div class="page-container">
    <!--/content-inner-->
-   
-	<div class="left-content" >
-	   <div class="inner-content" >
-		
+	<div class="left-content">
+	   <div class="inner-content">
+		<!-- header-starts -->
+			<?php include_once('includes/header.php');?>
+				
+				<!--content-->
 			<div class="content">
-				<h3 style="color: red;font-family: cursive;">Hotel Booking Management Sytem</h3>
 <div class="women_main">
 	<!-- start content -->
-<div class="registration">
-		
-	<div class="registration_left">
-
-		<h2>Please Enter Required info.</h2>
-		 <div class="registration_form">
-		 <!-- Form -->
-			<form method="post" name="chngpwd" onSubmit="return valid();">
-				<div>
-					<label>
-						<input placeholder="Email Address" type="email" required="true" name="email" style="border:solid #000 1px;">
-					</label>
+	<div class="grids">
+					<div class="progressbar-heading grids-heading">
+						<h2>Add Category</h2>
+					</div>
+					<div class="panel panel-widget forms-panel">
+						<div class="forms">
+							<div class="form-grids widget-shadow" data-example-id="basic-forms"> 
+								<div class="form-title">
+									<h4>Add Category :</h4>
+								</div>
+								<div class="form-body">
+									
+									<form method="post">
+									 <div class="form-group"> <label for="exampleInputEmail1">Category Title</label> <input type="text" class="form-control" name="cname" value="" required='true'> </div> 
+									 <div class="form-group"> <label for="exampleInputEmail1">Description</label> <textarea type="text" class="form-control" name="catdes" value=""></textarea> </div>
+									<div class="form-group"> <label for="exampleInputEmail1">Price</label> <input type="text" class="form-control" name="price" value="" required='true'> </div>
+									   <button type="submit" class="btn btn-default" name="submit">Add</button> </form> 
+								</div>
+							</div>
+						</div>
+					</div>
+			
+	
 				</div>
-				<div>
-					<label>
-						<input placeholder="Mobile Number" type="text" name="mobile" required="true" maxlength="10" pattern="[0-9]+" style="border:solid #000 1px;">
-					</label>
-				</div>	
-				<div>
-					<label>
-						<input placeholder="New Password" type="password" name="newpassword" required="true" style="border:solid #000 1px;">
-					</label>
-				</div>
-				<div>
-					<label>
-						<input placeholder="Confirm Password" type="password" name="confirmpassword" required="true" style="border:solid #000 1px;">
-					</label>
-				</div>				
-				<div>
-					<input type="submit" value="Reset" name="submit">
-				</div>
-				<div class="forget">
-					<a href="login.php">signin</a>
-				</div>
-			</form>
-			<!-- /Form -->
-			</div>
-	</div>
-	<div class="clearfix"></div>
-	</div>
 
 	<!-- end content -->
+	
+<?php include_once('includes/footer.php');?>
+</div>
 
 </div>
-</div>
-	<!--content-->
+			<!--content-->
 		</div>
 </div>
-				
-							  <div class="clearfix"></div>	
+				<!--//content-inner-->
+			<!--/sidebar-menu-->
+			<?php include_once('includes/sidebar.php');?>
+							  <div class="clearfix"></div>		
 							</div>
 							<script>
 							var toggle = true;
@@ -407,4 +387,4 @@ return true;
     </script>
 		   <script src="js/menu_jquery.js"></script>
 </body>
-</html>
+</html><?php }  ?>
