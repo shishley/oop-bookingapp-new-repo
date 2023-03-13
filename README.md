@@ -1,2 +1,4 @@
 # oop-bookingapp-new-repo
-prev repo had issues. oop booking app. BeachSide Hotels
+oop booking app. BeachSide Hotels,
+php,sql,
+clients can book hotel room of choice
